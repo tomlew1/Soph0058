@@ -1,18 +1,22 @@
-def substitution_cipher(text, key):
+def substitution_cipher(text, shift, decrypt=False):
     """
-    Encrypts text using a substitution cipher based on the key length.
-    The shift amount is determined by the length of the key.
+    Encrypts or decrypts text using a substitution cipher with the given shift.
+    If decrypt is True, the shift is applied in reverse.
     """
     result = ""
-    shift = len(key)
+
+    # For decryption, we use the negative shift (26-shift) % 26
+    if decrypt:
+        shift = (26 - shift) % 26
 
     for char in text:
         if char.isalpha():
-            # Determine the ASCII offset based on whether the character is uppercase or lowercase
+            # Determine the offset based on whether the character is uppercase or lowercase
             ascii_offset = ord('A') if char.isupper() else ord('a')
 
             # Apply the cipher: (position in alphabet + shift) % 26
             encrypted_char = chr((ord(char) - ascii_offset + shift) % 26 + ascii_offset)
+            # Used https://stackoverflow.com/questions/8886947/caesar-cipher-function-in-python as reference for the formula
             result += encrypted_char
         else:
             # Non-alphabetic characters remain unchanged
@@ -20,29 +24,86 @@ def substitution_cipher(text, key):
 
     return result
 
-def main():
-    # Get input from user
-    first_string = input("Enter first string: ")
-    second_string = input("Enter second string: ")
+def is_valid_input(text):
+    #Check if input contains only alphabetic characters.
+    return text.isalpha()
+
+def get_valid_input(prompt): #Checks user input for validity
+    while True:
+        user_input = input(prompt).strip()
+        if not user_input:
+            print("Input cannot be empty. Please try again.")
+        elif not is_valid_input(user_input):
+            print("Input must contain only alphabetic characters. Please try again.")
+        else:
+            return user_input
+
+def encrypt():
+    # Get input from user and then check the validity with get_valid_input()
+    color = get_valid_input("Enter a color (alphabetic characters only): ")
+    animal = get_valid_input("Enter an animal (alphabetic characters only): ")
 
     # Join the strings to form the phrase
-    phrase = first_string + second_string
+    phrase = color + animal
+    #Checks length of phrase to create shift
+    shift = len(phrase) 
 
-    # Get text to encrypt
-    text_to_encrypt = input("Enter text to encrypt: ")
+    # Get text to encrypt (can contain non-alphabetic characters)
+    text_to_encrypt = input("Enter text to encrypt: ").strip()
+    if not text_to_encrypt:
+        print("Text cannot be empty. Returning to main menu.")
+        return
 
-    # Encrypt the text using the phrase as the key
-    encrypted_text = substitution_cipher(text_to_encrypt, phrase)
+    # Encrypt the text
+    encrypted_text = substitution_cipher(text_to_encrypt, shift)
 
     print(f"\nOriginal phrase: {phrase}")
-    print(f"Shift amount (based on phrase length): {len(phrase)}")
+    print(f"Shift amount (based on phrase length): {shift}")
     print(f"Original text: {text_to_encrypt}")
     print(f"Encrypted text: {encrypted_text}")
 
-    # Demonstrate decryption by creating a complementary key
-    complementary_key = "x" * len(phrase)
-    decrypted_text = substitution_cipher(encrypted_text, complementary_key)
+
+def decrypt(): # Decrypt function starts here
+    # Get inputs from user and then check the validity with get_valid_input()
+    color = get_valid_input("Enter the color used for encryption (alphabetic characters only): ")
+    animal = get_valid_input("Enter the animal used for encryption (alphabetic characters only): ")
+
+    # Join the strings to form the phrase, check length of phrase to get shift
+    phrase = color + animal
+    shift = len(phrase)
+
+    # Get text to decrypt (can contain non-alphabetic characters)
+    text_to_decrypt = input("Enter text to decrypt: ").strip()
+    if not text_to_decrypt:
+        print("Text cannot be empty. Returning to main menu.")
+        return
+
+    # Decrypt the text using built-in function
+    decrypted_text = substitution_cipher(text_to_decrypt, shift, decrypt=True)
+
+    print(f"\nOriginal phrase: {phrase}")
+    print(f"Shift amount (based on phrase length): {shift}")
+    print(f"Encrypted text: {text_to_decrypt}")
     print(f"Decrypted text: {decrypted_text}")
 
-if __name__ == "__main__":
+def main(): #Main function starts here
+    while True:
+        print("\n--- Substitution Cipher Program ---")
+        print("1. Encrypt a message")
+        print("2. Decrypt a message")
+        print("3. Exit")
+
+        choice = input("Enter your choice (1-3): ")
+
+        if choice == '1':
+            encrypt()
+        elif choice == '2':
+            decrypt()
+        elif choice == '3':
+            print("Exiting program. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__": #Checks if the program is being run directly and not imported
     main()
